@@ -24,7 +24,8 @@ class Server
       pm2.list (err, list) ->
         if err
           return reject err
-        resolve list
+        resolve _.filter list, (l) ->
+          l.name isnt 'lgp-monitor'
 
   get_app_list: (has_cwd=false) ->
     @true_app_list()

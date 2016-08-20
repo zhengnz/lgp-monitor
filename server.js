@@ -36,7 +36,9 @@
           if (err) {
             return reject(err);
           }
-          return resolve(list);
+          return resolve(_.filter(list, function(l) {
+            return l.name !== 'lgp-monitor';
+          }));
         });
       });
     };
