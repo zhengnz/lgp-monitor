@@ -1,0 +1,41 @@
+extends base
+
+block content
+    .ko-hide
+        .panel.panel-default
+            .panel-heading
+                span.mr15 操作日志
+            .panel-body.scroll-panel-body
+                pre(data-bind='textBottom: log')
+
+        .alert.alert-info(data-bind='visible: list_loading') 正在加载app列表
+        //ko foreach: app_list
+        .panel.panel-default
+            .panel-heading
+                span.mr15(data-bind='text: name')
+                a.btn.btn-sm.btn-info.mr15(href='#', data-bind='trigger: show_log')
+                    //ko ifnot: show_log
+                    | 打开日志
+                    ///ko
+                    //ko if: show_log
+                    | 关闭日志
+                    ///ko
+                //ko if: mode() != 'fork'
+                button.btn.btn-sm.btn-warning.mr15(data-bind='click: reload, disable: reloading')
+                    | 重载
+                ///ko
+                button.btn.btn-sm.btn-warning.mr15(data-bind='click: restart, disable: restarting')
+                    | 重启
+                button.btn.btn-sm.btn-warning.mr15(data-bind='click: clear_log')
+                    | 清空日志
+                //ko if: git
+                button.btn.btn-sm.btn-warning.mr15(data-bind='click: pull, disable: pulling')
+                    | 同步git
+                ///ko
+                span(data-bind='text: git_version')
+            .panel-body.scroll-panel-body(data-bind='visible: show_log')
+                pre(data-bind='textBottom: log')
+        ///ko
+
+block script
+    script(type='text/javascript', src='/static/js/index.js')

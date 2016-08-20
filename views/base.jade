@@ -1,0 +1,23 @@
+doctype html
+html
+    head
+        meta(charset="UTF-8")
+        meta(http-equiv="X-UA-Compatible", content="IE=edge")
+        meta(name="viewport", content="width=device-width, initial-scale=1")
+        link(rel="shortcut icon", type="image/x-icon", href="/static/image/favicon.ico")
+        block title
+            title LGP Monitor
+        link(rel='stylesheet', href='/static/bootstrap/css/bootstrap.min.css')
+        link(rel='stylesheet', href='/static/css/layout.css')
+
+    body
+        .container
+            block content
+
+        script(type='text/javascript', src='/static/js/jquery-2.1.4.js')
+        script(type='text/javascript', src='/static/bootstrap/js/bootstrap.min.js')
+        script(type='text/javascript', src='/static/js/hprose-html5.min.js')
+        script(type='text/javascript', src='/static/js/knockout-3.4.0.js')
+        script(type='text/javascript', src='/static/js/knockout.mapping-latest.js')
+        script(type='text/javascript', src='/static/js/lodash.min.js')
+        block script

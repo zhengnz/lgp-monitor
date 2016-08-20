@@ -1,0 +1,10 @@
+.ko-hide {
+  display: none;
+}
+.scroll-panel-body {
+  max-height: 200px;
+  overflow-y: auto;
+}
+.mr15 {
+  margin-right: 15px;
+}

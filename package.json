@@ -1,0 +1,31 @@
+{
+  "name": "lgp-monitor",
+  "version": "1.0.0",
+  "description": "PM2 Sample Module",
+  "main": "app.js",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.14.0",
+    "express-session": "^1.14.0",
+    "hprose": "^2.0.21",
+    "lodash": "^4.15.0",
+    "pmx": "beta"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/keymetrics/pmx.git"
+  },
+  "config": {
+    "port": 3001
+  },
+  "apps": [
+    {
+      "merge_logs": true,
+      "max_memory_restart": "200M",
+      "script": "app.js"
+    }
+  ],
+  "author": "Keymetrics Inc.",
+  "license": "MIT"
+}
