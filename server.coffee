@@ -97,19 +97,12 @@ class Server
     @server.push 'console', "#{msg}\n"
 
   reload_app: (name) ->
-#    new Promise (resolve, reject) =>
-#      @console "重载#{name}中，请稍等..."
-#      pm2.reload name, (err) =>
-#        if err
-#          return reject err
-#        @console "重载#{name}完成"
-#        resolve()
-
     new Promise (resolve, reject) =>
-      cmd = exec "pm2 reload #{name}"
-      cmd.stdout.on 'data', (data) =>
-        @console data
-      cmd.on 'exit', ->
+      @console "重载#{name}中，请稍等..."
+      pm2.reload name, (err) =>
+        if err
+          return reject err
+        @console "重载#{name}完成"
         resolve()
 
   restart_app: (name) ->
