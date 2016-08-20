@@ -147,14 +147,12 @@
     Server.prototype.reload_app = function(name) {
       return new Promise((function(_this) {
         return function(resolve, reject) {
-          var cmd, msg;
+          var cmd;
           cmd = exec("pm2 reload " + name);
-          msg = '';
           cmd.stdout.on('data', function(data) {
-            return msg += data;
+            return _this.console(data);
           });
           return cmd.on('exit', function() {
-            _this.console(msg);
             return resolve();
           });
         };

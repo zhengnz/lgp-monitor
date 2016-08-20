@@ -107,11 +107,9 @@ class Server
 
     new Promise (resolve, reject) =>
       cmd = exec "pm2 reload #{name}"
-      msg = ''
-      cmd.stdout.on 'data', (data) ->
-        msg += data
-      cmd.on 'exit', =>
-        @console msg
+      cmd.stdout.on 'data', (data) =>
+        @console data
+      cmd.on 'exit', ->
         resolve()
 
   restart_app: (name) ->
