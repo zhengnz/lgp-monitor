@@ -82,7 +82,11 @@
         return;
       }
       this.pulling(true);
-      return this.parent.client.git(this.name())["catch"](function(err) {
+      return this.parent.client.git(this.name()).then((function(_this) {
+        return function(version) {
+          return _this.git_version(version);
+        };
+      })(this))["catch"](function(err) {
         alert('发生错误，请查看控制台');
         return console.log(err);
       }).whenComplete((function(_this) {

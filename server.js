@@ -43,48 +43,56 @@
       });
     };
 
+    Server.prototype.get_git_version = function(path) {
+      return new Promise(function(resolve, reject) {
+        var cmd, version;
+        cmd = exec("cd " + path + " && git rev-parse HEAD");
+        version = '';
+        cmd.stdout.on('data', function(data) {
+          return version += data;
+        });
+        return cmd.on('exit', function() {
+          return resolve(version);
+        });
+      });
+    };
+
     Server.prototype.get_app_list = function(has_cwd) {
       if (has_cwd == null) {
         has_cwd = false;
       }
-      return this.true_app_list().then(function(apps) {
-        return Promise.map(apps, function(app) {
-          var path;
-          path = app.pm2_env.pm_cwd;
-          return new Promise(function(resolve, reject) {
-            return fs.exists(path + "/.git", function(exists) {
-              var obj;
-              obj = {
-                name: app.name,
-                git: exists,
-                mode: app.pm2_env.exec_mode
-              };
-              if (has_cwd === true) {
-                obj.cwd = path;
-              }
-              return resolve(obj);
-            });
-          }).then(function(obj) {
-            if (!obj.git) {
-              obj.git_version = '';
-              return Promise.resolve(obj);
-            } else {
-              return new Promise(function(resolve, reject) {
-                var cmd, version;
-                cmd = exec("cd " + path + " && git rev-parse HEAD");
-                version = '';
-                cmd.stdout.on('data', function(data) {
-                  return version += data;
-                });
-                return cmd.on('exit', function() {
-                  obj.git_version = version;
-                  return resolve(obj);
-                });
+      return this.true_app_list().then((function(_this) {
+        return function(apps) {
+          return Promise.map(apps, function(app) {
+            var path;
+            path = app.pm2_env.pm_cwd;
+            return new Promise(function(resolve, reject) {
+              return fs.exists(path + "/.git", function(exists) {
+                var obj;
+                obj = {
+                  name: app.name,
+                  git: exists,
+                  mode: app.pm2_env.exec_mode
+                };
+                if (has_cwd === true) {
+                  obj.cwd = path;
+                }
+                return resolve(obj);
               });
-            }
+            }).then(function(obj) {
+              if (!obj.git) {
+                obj.git_version = '';
+                return Promise.resolve(obj);
+              } else {
+                return _this.get_git_version(path).then(function(version) {
+                  obj.git_version = version;
+                  return Promise.resolve(obj);
+                });
+              }
+            });
           });
-        });
-      });
+        };
+      })(this));
     };
 
     Server.prototype.start_push_log = function(name) {
@@ -190,9 +198,13 @@
               return _this.console(data);
             });
             return cmd.on('exit', function() {
-              return resolve();
+              return resolve(app.cwd);
             });
           });
+        };
+      })(this)).then((function(_this) {
+        return function(path) {
+          return _this.get_git_version(path);
         };
       })(this));
     };

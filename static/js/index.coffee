@@ -59,6 +59,8 @@ class appModel
       return
     @pulling true
     @parent.client.git @name()
+    .then (version) =>
+      @git_version version
     .catch (err) ->
       alert '发生错误，请查看控制台'
       console.log err

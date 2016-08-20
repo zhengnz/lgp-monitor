@@ -27,10 +27,19 @@ class Server
         resolve _.filter list, (l) ->
           l.name isnt 'lgp-monitor'
 
+  get_git_version: (path) ->
+    new Promise (resolve, reject) ->
+      cmd = exec "cd #{path} && git rev-parse HEAD"
+      version = ''
+      cmd.stdout.on 'data', (data) ->
+        version += data
+      cmd.on 'exit', ->
+        resolve version
+
   get_app_list: (has_cwd=false) ->
     @true_app_list()
-    .then (apps) ->
-      Promise.map apps, (app) ->
+    .then (apps) =>
+      Promise.map apps, (app) =>
         path = app.pm2_env.pm_cwd
         new Promise (resolve, reject) ->
           fs.exists "#{path}/.git", (exists) ->
@@ -42,19 +51,15 @@ class Server
             if has_cwd is on
               obj.cwd = path
             resolve obj
-        .then (obj) ->
+        .then (obj) =>
           if not obj.git
             obj.git_version = ''
-            return Promise.resolve obj
+            Promise.resolve obj
           else
-            new Promise (resolve, reject) ->
-              cmd = exec "cd #{path} && git rev-parse HEAD"
-              version = ''
-              cmd.stdout.on 'data', (data) ->
-                version += data
-              cmd.on 'exit', ->
-                obj.git_version = version
-                resolve obj
+            @get_git_version path
+            .then (version) ->
+              obj.git_version = version
+              Promise.resolve obj
 
   start_push_log: (name) ->
     @console "开始输出#{name}的日志"
@@ -126,7 +131,9 @@ class Server
         cmd.stdout.on 'data', (data) =>
           @console data
         cmd.on 'exit', ->
-          resolve()
+          resolve app.cwd
+    .then (path) =>
+      @get_git_version path
 
   start: ->
     @server.start()
