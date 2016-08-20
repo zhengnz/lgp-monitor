@@ -147,12 +147,14 @@
     Server.prototype.reload_app = function(name) {
       return new Promise((function(_this) {
         return function(resolve, reject) {
-          _this.console("重载" + name + "中，请稍等...");
-          return pm2.reload(name, function(err) {
-            if (err) {
-              return reject(err);
-            }
-            _this.console("重载" + name + "完成");
+          var cmd, msg;
+          cmd = exec("pm2 reload " + name);
+          msg = '';
+          cmd.stdout.on('data', function(data) {
+            return msg += data;
+          });
+          return cmd.on('exit', function() {
+            _this.console(msg);
             return resolve();
           });
         };
