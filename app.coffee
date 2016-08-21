@@ -1,10 +1,5 @@
 pmx = require 'pmx'
-express = require 'express'
-pm2 = require 'pm2'
-cookieParser = require 'cookie-parser'
-session = require 'express-session'
-bodyParser = require 'body-parser'
-Server = require './server'
+
 
 probe = pmx.probe()
 
@@ -34,25 +29,13 @@ probe.metric {
     conf.port
 }
 
-session_opts = {
-  key: 'lgp-monitor'
-  secret: '$W%VDwe3r4wf#$EQ'
-  resave: true
-  saveUninitialized: true
-  cookie: {maxAge: 86400 * 1000 * 7}
+probe.metric {
+  name: 'website'
+  value: ->
+    conf.website or "#{__dirname}/website.js"
 }
 
-app = express()
-app.set 'views', "#{__dirname}/views"
-app.set 'view engine', 'jade'
-app.use '/static', express.static "#{__dirname}/static"
-app.use cookieParser()
-app.use session session_opts
-app.use bodyParser.urlencoded {extended: false}
-app.use bodyParser.json()
-
-app.get '/', (req, res) ->
-  res.render 'index'
+app = require conf.website
 
 pm2.connect (err) ->
   if err
