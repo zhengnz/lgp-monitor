@@ -19,7 +19,8 @@
   },
   "config": {
     "port": 3001,
-    "website": false
+    "website": false,
+    "server": false
   },
   "apps": [
     {
@@ -28,6 +29,6 @@
       "script": "app.js"
     }
   ],
-  "author": "Keymetrics Inc.",
+  "author": "Norman",
   "license": "MIT"
 }
