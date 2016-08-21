@@ -1,4 +1,5 @@
 pmx = require 'pmx'
+pm2 = require 'pm2'
 
 probe = pmx.probe()
 

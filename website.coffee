@@ -1,5 +1,4 @@
 express = require 'express'
-pm2 = require 'pm2'
 cookieParser = require 'cookie-parser'
 session = require 'express-session'
 bodyParser = require 'body-parser'
