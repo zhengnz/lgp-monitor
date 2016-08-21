@@ -1,6 +1,5 @@
 pmx = require 'pmx'
 
-
 probe = pmx.probe()
 
 conf = pmx.initModule {
@@ -29,13 +28,22 @@ probe.metric {
     conf.port
 }
 
+website_plugin = conf.website or "#{__dirname}/website.js"
 probe.metric {
   name: 'website'
   value: ->
-    conf.website or "#{__dirname}/website.js"
+    website_plugin
 }
 
-app = require conf.website
+server_plugin = conf.server or "#{__dirname}/server.js"
+probe.metric {
+  name: 'server'
+  value: ->
+    server_plugin
+}
+
+app = require website_plugin
+Server = require server_plugin
 
 pm2.connect (err) ->
   if err
