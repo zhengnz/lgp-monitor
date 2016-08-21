@@ -53,4 +53,7 @@ pm2.connect (err) ->
   server = new Server()
   app.use '/api', server.server.handle
 
-app.listen conf.port
+s = app.listen conf.port, ->
+  host = s.address().address
+  port = s.address().port
+  console.log 'lgp-monitor listen at http://%s:%s', host, port
