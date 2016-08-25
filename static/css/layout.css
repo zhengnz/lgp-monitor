@@ -1,10 +1,44 @@
+@import "flex.css";
+html,
+body {
+  height: 100%;
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace !important;
+}
+.full-height {
+  height: 100%;
+}
 .ko-hide {
   display: none;
 }
 .scroll-panel-body {
-  max-height: 200px;
   overflow-y: auto;
+}
+.mt20 {
+  margin-top: 20px;
+}
+.mr5 {
+  margin-right: 5px !important;
 }
 .mr15 {
   margin-right: 15px;
+}
+#main {
+  height: 70%;
+}
+#log {
+  height: 200px;
+}
+.pointer {
+  cursor: pointer;
+}
+.flex {
+  width: 100%;
+}
+.flex div {
+  min-width: 40px;
+  min-height: 40px;
+  background: #f1d722;
+  text-align: center;
+  line-height: 50px;
+  color: #222;
 }

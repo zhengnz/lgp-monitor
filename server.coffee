@@ -15,9 +15,18 @@ class Server
       reload: @reload_app.bind @
       restart: @restart_app.bind @
       git: @git.bind @
+      git_rollback: @git_rollback.bind @
+      get_git_commits: @get_git_commits.bind @
     }
     @init_publish()
     @server.publish 'console'
+
+  cmd: (msg, cwd=__dirname) ->
+    new Promise (resolve, reject) ->
+      exec msg, {cwd: cwd}, (err, stdout, stderr) ->
+        if err
+          return reject err
+        resolve [stdout, stderr]
 
   true_app_list: ->
     new Promise (resolve, reject) ->
@@ -28,13 +37,11 @@ class Server
           l.name isnt 'lgp-monitor'
 
   get_git_version: (path) ->
-    new Promise (resolve, reject) ->
-      cmd = exec "cd #{path} && git rev-parse HEAD"
-      version = ''
-      cmd.stdout.on 'data', (data) ->
-        version += data
-      cmd.on 'exit', ->
-        resolve version
+    @cmd "cd #{path} && git rev-parse HEAD"
+    .spread (stdout, stderr) ->
+      if stderr
+        return Promise.reject new Error stderr
+      Promise.resolve stdout
 
   get_app_list: (has_cwd=false) ->
     @true_app_list()
@@ -119,7 +126,7 @@ class Server
         @console "重启#{name}完成"
         resolve()
 
-  git: (name) ->
+  get_git_path: (name) ->
     @get_app_list(true)
     .then (apps) =>
       new Promise (resolve, reject) =>
@@ -127,13 +134,51 @@ class Server
           _app.name is name and _app.git is on
         if app is undefined
           reject new Error '无匹配的应用'
-        cmd = exec "cd #{app.cwd} && git pull -u origin master"
-        cmd.stdout.on 'data', (data) =>
-          @console data
-        cmd.on 'exit', ->
-          resolve app.cwd
-    .then (path) =>
+        resolve app.cwd
+
+  git: (name) ->
+    path = null
+    @get_git_path name
+    .then (p) =>
+      path = p
+      cmd = 'git pull -u origin master'
+      @console "开始git同步, 目录: #{path}"
+      @console cmd
+      @cmd cmd, path
+    .spread (stdout, stderr) =>
+      @console stderr
+      @console stdout
       @get_git_version path
+
+  get_git_commits: (name) ->
+    @get_git_path name
+    .then (path) =>
+      format = '{\\"id\\": \\"%H\\", \\"msg\\": \\"%s\\", \\"time\\": \\"%cd\\"}'
+      @cmd "cd #{path} && git log --pretty=format:\"#{format}\" -5"
+    .spread (stdout, stderr) =>
+      if stderr
+        return Promise.reject new Error stderr
+      arr = _.split stdout, /\n/g
+      arr = _.filter arr, (obj) ->
+        obj isnt ''
+      arr = _.map arr, (obj) ->
+        JSON.parse obj
+      Promise.resolve arr
+
+  git_rollback: (name, commit_id) ->
+    @console "#{name}开始回滚到#{commit_id}"
+    path = null
+    @get_git_path name
+    .then (p) =>
+      path = p
+      @cmd "cd #{path} && git reset --hard #{commit_id}"
+    .spread (stdout, stderr) =>
+      @console stderr
+      @console stdout
+      @get_git_version path
+    .then (version) =>
+      @console "#{name}当前版本: #{version}"
+      Promise.resolve version
 
   start: ->
     @server.start()

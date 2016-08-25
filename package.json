@@ -1,9 +1,10 @@
 {
   "name": "lgp-monitor",
-  "version": "2.0.7",
+  "version": "2.0.14",
   "description": "PM2 Sample Module",
   "main": "app.js",
   "dependencies": {
+    "bluebird": "^3.4.1",
     "body-parser": "^1.15.2",
     "cookie-parser": "^1.4.3",
     "express": "^4.14.0",
@@ -11,6 +12,7 @@
     "hprose": "^2.0.21",
     "jade": "^1.11.0",
     "lodash": "^4.15.0",
+    "pm2": "^2.0.7",
     "pmx": "beta"
   },
   "repository": {

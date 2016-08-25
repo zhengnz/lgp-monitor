@@ -24,11 +24,29 @@
         get_app_list: this.get_app_list.bind(this),
         reload: this.reload_app.bind(this),
         restart: this.restart_app.bind(this),
-        git: this.git.bind(this)
+        git: this.git.bind(this),
+        git_rollback: this.git_rollback.bind(this),
+        get_git_commits: this.get_git_commits.bind(this)
       });
       this.init_publish();
       this.server.publish('console');
     }
+
+    Server.prototype.cmd = function(msg, cwd) {
+      if (cwd == null) {
+        cwd = __dirname;
+      }
+      return new Promise(function(resolve, reject) {
+        return exec(msg, {
+          cwd: cwd
+        }, function(err, stdout, stderr) {
+          if (err) {
+            return reject(err);
+          }
+          return resolve([stdout, stderr]);
+        });
+      });
+    };
 
     Server.prototype.true_app_list = function() {
       return new Promise(function(resolve, reject) {
@@ -44,16 +62,11 @@
     };
 
     Server.prototype.get_git_version = function(path) {
-      return new Promise(function(resolve, reject) {
-        var cmd, version;
-        cmd = exec("cd " + path + " && git rev-parse HEAD");
-        version = '';
-        cmd.stdout.on('data', function(data) {
-          return version += data;
-        });
-        return cmd.on('exit', function() {
-          return resolve(version);
-        });
+      return this.cmd("cd " + path + " && git rev-parse HEAD").spread(function(stdout, stderr) {
+        if (stderr) {
+          return Promise.reject(new Error(stderr));
+        }
+        return Promise.resolve(stdout);
       });
     };
 
@@ -182,29 +195,88 @@
       })(this));
     };
 
-    Server.prototype.git = function(name) {
+    Server.prototype.get_git_path = function(name) {
       return this.get_app_list(true).then((function(_this) {
         return function(apps) {
           return new Promise(function(resolve, reject) {
-            var app, cmd;
+            var app;
             app = _.find(apps, function(_app) {
               return _app.name === name && _app.git === true;
             });
             if (app === void 0) {
               reject(new Error('无匹配的应用'));
             }
-            cmd = exec("cd " + app.cwd + " && git pull -u origin master");
-            cmd.stdout.on('data', function(data) {
-              return _this.console(data);
-            });
-            return cmd.on('exit', function() {
-              return resolve(app.cwd);
-            });
+            return resolve(app.cwd);
           });
         };
-      })(this)).then((function(_this) {
-        return function(path) {
+      })(this));
+    };
+
+    Server.prototype.git = function(name) {
+      var path;
+      path = null;
+      return this.get_git_path(name).then((function(_this) {
+        return function(p) {
+          var cmd;
+          path = p;
+          cmd = 'git pull -u origin master';
+          _this.console("开始git同步, 目录: " + path);
+          _this.console(cmd);
+          return _this.cmd(cmd, path);
+        };
+      })(this)).spread((function(_this) {
+        return function(stdout, stderr) {
+          _this.console(stderr);
+          _this.console(stdout);
           return _this.get_git_version(path);
+        };
+      })(this));
+    };
+
+    Server.prototype.get_git_commits = function(name) {
+      return this.get_git_path(name).then((function(_this) {
+        return function(path) {
+          var format;
+          format = '{\\"id\\": \\"%H\\", \\"msg\\": \\"%s\\", \\"time\\": \\"%cd\\"}';
+          return _this.cmd("cd " + path + " && git log --pretty=format:\"" + format + "\" -5");
+        };
+      })(this)).spread((function(_this) {
+        return function(stdout, stderr) {
+          var arr;
+          if (stderr) {
+            return Promise.reject(new Error(stderr));
+          }
+          arr = _.split(stdout, /\n/g);
+          arr = _.filter(arr, function(obj) {
+            return obj !== '';
+          });
+          arr = _.map(arr, function(obj) {
+            return JSON.parse(obj);
+          });
+          return Promise.resolve(arr);
+        };
+      })(this));
+    };
+
+    Server.prototype.git_rollback = function(name, commit_id) {
+      var path;
+      this.console(name + "开始回滚到" + commit_id);
+      path = null;
+      return this.get_git_path(name).then((function(_this) {
+        return function(p) {
+          path = p;
+          return _this.cmd("cd " + path + " && git reset --hard " + commit_id);
+        };
+      })(this)).spread((function(_this) {
+        return function(stdout, stderr) {
+          _this.console(stderr);
+          _this.console(stdout);
+          return _this.get_git_version(path);
+        };
+      })(this)).then((function(_this) {
+        return function(version) {
+          _this.console(name + "当前版本: " + version);
+          return Promise.resolve(version);
         };
       })(this));
     };

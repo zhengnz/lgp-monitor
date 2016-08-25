@@ -15,10 +15,38 @@ ko.bindingHandlers.textBottom = {
     e.scrollTop e[0].scrollHeight
 }
 
+class commitModel
+  constructor: (@parent, @data) ->
+    ko.mapping.fromJS @data, {}, @
+
+  rollback: ->
+    if confirm("确认回滚到#{@id()}?") and @parent.parent.loading() is off
+      $('#commits').modal 'hide'
+      @parent.parent.loading true
+      @parent.parent.client.git_rollback @parent.name(), @id()
+      .then (version) =>
+        alert '回滚操作完成，详情请看操作日志'
+        @parent.git_version version
+      .catch (err) ->
+        alert '发生错误，请查看控制台'
+        console.log err
+      .whenComplete =>
+        @parent.parent.loading false
+
 class appModel
   constructor: (@parent, @data) ->
     ko.mapping.fromJS @data, {}, @
-    @log = ko.observable('')
+    @log = ko.observable ''
+    @output = ko.observable ''
+    @pause = ko.observable false
+    @pause.subscribe (v) =>
+      if v is off
+        @output @log()
+
+    @log.subscribe (v) =>
+      if @pause() is off
+        @output v
+
     @show_log = ko.observable false
 
     @show_log.subscribe (v) =>
@@ -28,36 +56,38 @@ class appModel
       else
         @parent.client.unsubscribe @name()
 
-    @reloading = ko.observable false
-    @restarting = ko.observable false
-    @pulling = ko.observable false
+  show: ->
+    _.each @parent.app_list(), (app) ->
+      app.show_log false
+    @show_log true
+    @parent.view_app @
 
   reload: ->
-    if @reloading() is on
+    if @parent.loading() is on
       return
-    @reloading true
+    @parent.loading true
     @parent.client.reload @name()
     .catch (err) ->
       alert '发生错误，请查看控制台'
       console.log err
     .whenComplete =>
-      @reloading false
+      @parent.loading false
 
   restart: ->
-    if @restarting() is on
+    if @parent.loading() is on
       return
-    @restarting true
+    @parent.loading true
     @parent.client.restart @name()
     .catch (err) ->
       alert '发生错误，请查看控制台'
       console.log err
     .whenComplete =>
-      @restarting false
+      @parent.loading false
 
   pull: ->
-    if @pulling() is on
+    if @parent.loading() is on
       return
-    @pulling true
+    @parent.loading true
     @parent.client.git @name()
     .then (version) =>
       @git_version version
@@ -65,7 +95,22 @@ class appModel
       alert '发生错误，请查看控制台'
       console.log err
     .whenComplete =>
-      @pulling false
+      @parent.loading false
+
+  list_commit: ->
+    if @parent.loading() is on
+      return
+    @parent.loading true
+    @parent.client.get_git_commits @name()
+    .then (rows) =>
+      @parent.commits _.map rows, (row) =>
+        new commitModel @, row
+      $('#commits').modal 'show'
+    .catch (err) ->
+      alert '发生错误，请查看控制台'
+      console.log err
+    .whenComplete =>
+      @parent.loading false
 
   clear_log: ->
     @log ''
@@ -77,10 +122,25 @@ class viewModel
       'reload'
       'restart'
       'git'
+      'get_git_commits'
+      'git_rollback'
     ]
 
     @app_list = ko.observableArray []
+    @view_app = ko.observable null
+    @view_app.subscribe (v) ->
+      if v?
+        setTimeout ->
+          $('.ui.dropdown').dropdown {
+            on: 'hover'
+            action: 'hide'
+          }
+        , 300
+
     @list_loading = ko.observable true
+    @loading = ko.observable false
+
+    @commits = ko.observableArray []
     @get_app_list()
 
     @log = ko.observable('欢迎使用lgp-monitor\n')
