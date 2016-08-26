@@ -5,6 +5,7 @@ Promise = require 'bluebird'
 exec = require('child_process').exec
 pm2 = require 'pm2'
 fs = require 'fs'
+os = require 'os'
 Promise.promisifyAll pm2
 
 class Server
@@ -18,6 +19,7 @@ class Server
       git: @git.bind @ #pull git
       git_rollback: @git_rollback.bind @ #git回滚到指定版本
       get_git_commits: @get_git_commits.bind @ #获取git历史
+      client_exit: @client_exit.bind @
     }
     @init_publish() #初始化各app日志推送监听
     @server.publish 'console' #开启操作日志推送
@@ -25,9 +27,8 @@ class Server
     @forbid_restart = false
     process.on 'SIGINT', =>
       @forbid_restart = true
-      _.forIn @push_recorder, (v, k) ->
-        if v.cmd?
-          v.cmd.kill()
+      _.each _.keys(@push_recorder), (name) =>
+        @end_push_log name
 
   cmd: (msg, cwd=__dirname) ->
     new Promise (resolve, reject) ->
@@ -93,7 +94,10 @@ class Server
   end_push_log: (name) ->
     if @push_recorder[name].cmd?
       @console "结束输出#{name}的日志"
-      @push_recorder[name].cmd.kill()
+      if os.platform() is 'win32'
+        exec "taskkill /pid #{@push_recorder[name].cmd.pid} /T /F"
+      else
+        @push_recorder[name].cmd.kill()
 
   init_publish: ->
     @true_app_list()
@@ -118,6 +122,10 @@ class Server
             @end_push_log name
 
         @server.publish name, {events: push_events}
+
+  client_exit: (name) ->
+    @server.push name, 'CLIENT EXIT'
+    true
 
   console: (msg) ->
     @server.push 'console', "#{msg}\n"

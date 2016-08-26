@@ -82,10 +82,13 @@
         return function(v) {
           if (v === true) {
             return _this.parent.client.subscribe(_this.name(), function(data) {
-              return _this.log("" + (_this.log()) + data);
+              if (data !== 'CLIENT EXIT') {
+                return _this.log("" + (_this.log()) + data);
+              }
             });
           } else {
-            return _this.parent.client.unsubscribe(_this.name());
+            _this.parent.client.unsubscribe(_this.name());
+            return _this.parent.client.client_exit(_this.name());
           }
         };
       })(this));
@@ -180,7 +183,7 @@
 
   viewModel = (function() {
     function viewModel() {
-      this.client = new hprose.Client.create("/api", ['get_app_list', 'reload', 'restart', 'git', 'get_git_commits', 'git_rollback']);
+      this.client = new hprose.Client.create("/api", ['get_app_list', 'reload', 'restart', 'git', 'get_git_commits', 'git_rollback', 'client_exit']);
       this.app_list = ko.observableArray([]);
       this.view_app = ko.observable(null);
       this.view_app.subscribe(function(v) {

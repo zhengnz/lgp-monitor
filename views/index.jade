@@ -18,8 +18,8 @@ block content
                     ///ko
             .full-height(flex='dir:top', flex-box='1')
                 //ko if: view_app
-                h1(data-bind='text: view_app().name', style='padding: 15px 0 0 15px; margin: 0')
                 .ui.segment(flex-box='0', style='padding: 10px;', data-bind='with: view_app')
+                    h1(data-bind='text: name', style='padding: 0 0 0 15px; margin: 0;')
                     //ko if: $root.loading
                     .ui.active.inverted.dimmer
                         .ui.loader.large

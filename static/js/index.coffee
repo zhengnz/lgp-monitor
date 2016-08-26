@@ -52,9 +52,11 @@ class appModel
     @show_log.subscribe (v) =>
       if v is on
         @parent.client.subscribe @name(), (data) =>
-          @log "#{@log()}#{data}"
+          if data isnt 'CLIENT EXIT'
+            @log "#{@log()}#{data}"
       else
         @parent.client.unsubscribe @name()
+        @parent.client.client_exit @name()
 
   show: ->
     _.each @parent.app_list(), (app) ->
@@ -124,6 +126,7 @@ class viewModel
       'git'
       'get_git_commits'
       'git_rollback'
+      'client_exit'
     ]
 
     @app_list = ko.observableArray []
