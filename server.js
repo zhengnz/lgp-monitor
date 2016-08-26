@@ -117,14 +117,22 @@
           return _this.server.push(name, data);
         };
       })(this));
+      cmd.on('exit', (function(_this) {
+        return function() {
+          if (_this.server.idlist(name) > 0) {
+            return _this.start_push_log(name);
+          } else {
+            return _this.push_recorder[name].cmd = null;
+          }
+        };
+      })(this));
       return this.push_recorder[name].cmd = cmd;
     };
 
     Server.prototype.end_push_log = function(name) {
       if (this.push_recorder[name].cmd != null) {
         this.console("结束输出" + name + "的日志");
-        this.push_recorder[name].cmd.kill();
-        return this.push_recorder[name].cmd = null;
+        return this.push_recorder[name].cmd.kill();
       }
     };
 

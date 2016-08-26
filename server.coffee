@@ -73,13 +73,17 @@ class Server
     cmd = exec "pm2 logs #{name}"
     cmd.stdout.on 'data', (data) =>
       @server.push name, data
+    cmd.on 'exit', =>
+      if @server.idlist(name) > 0
+        @start_push_log name
+      else
+        @push_recorder[name].cmd = null
     @push_recorder[name].cmd = cmd
 
   end_push_log: (name) ->
     if @push_recorder[name].cmd?
       @console "结束输出#{name}的日志"
       @push_recorder[name].cmd.kill()
-      @push_recorder[name].cmd = null
 
   init_publish: ->
     @true_app_list()
