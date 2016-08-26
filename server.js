@@ -16,6 +16,8 @@
 
   fs = require('fs');
 
+  Promise.promisifyAll(pm2);
+
   Server = (function() {
     function Server() {
       this.push_recorder = {};
@@ -110,7 +112,9 @@
 
     Server.prototype.start_push_log = function(name) {
       var cmd;
-      this.console("开始输出" + name + "的日志");
+      if (this.push_recorder[name].cmd === null) {
+        this.console("开始输出" + name + "的日志");
+      }
       cmd = exec("pm2 logs " + name);
       cmd.stdout.on('data', (function(_this) {
         return function(data) {
@@ -174,31 +178,19 @@
     };
 
     Server.prototype.reload_app = function(name) {
-      return new Promise((function(_this) {
-        return function(resolve, reject) {
-          _this.console("重载" + name + "中，请稍等...");
-          return pm2.reload(name, function(err) {
-            if (err) {
-              return reject(err);
-            }
-            _this.console("重载" + name + "完成");
-            return resolve();
-          });
+      return pm2.reloadAsync(name).then((function(_this) {
+        return function() {
+          _this.console("重载" + name + "完成");
+          return Promise.resolve();
         };
       })(this));
     };
 
     Server.prototype.restart_app = function(name) {
-      return new Promise((function(_this) {
-        return function(resolve, reject) {
-          _this.console("重启" + name + "中，请稍等...");
-          return pm2.restart(name, function(err) {
-            if (err) {
-              return reject(err);
-            }
-            _this.console("重启" + name + "完成");
-            return resolve();
-          });
+      return pm2.restartAsync(name).then((function(_this) {
+        return function() {
+          _this.console("重启" + name + "完成");
+          return Promise.resolve();
         };
       })(this));
     };

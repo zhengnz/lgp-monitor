@@ -5,21 +5,22 @@ Promise = require 'bluebird'
 exec = require('child_process').exec
 pm2 = require 'pm2'
 fs = require 'fs'
+Promise.promisifyAll pm2
 
 class Server
   constructor: ->
-    @push_recorder = {}
+    @push_recorder = {} #保存日志推送的app
     @server = new hprose.HttpService()
     @server.add {
-      get_app_list: @get_app_list.bind @
-      reload: @reload_app.bind @
-      restart: @restart_app.bind @
-      git: @git.bind @
-      git_rollback: @git_rollback.bind @
-      get_git_commits: @get_git_commits.bind @
+      get_app_list: @get_app_list.bind @ #获取app列表
+      reload: @reload_app.bind @ #重载
+      restart: @restart_app.bind @ #重启
+      git: @git.bind @ #pull git
+      git_rollback: @git_rollback.bind @ #git回滚到指定版本
+      get_git_commits: @get_git_commits.bind @ #获取git历史
     }
-    @init_publish()
-    @server.publish 'console'
+    @init_publish() #初始化各app日志推送监听
+    @server.publish 'console' #开启操作日志推送
 
   cmd: (msg, cwd=__dirname) ->
     new Promise (resolve, reject) ->
@@ -56,6 +57,7 @@ class Server
               mode: app.pm2_env.exec_mode
             }
             if has_cwd is on
+              #has_cwd指定为true是返回包含目录的object，安全性措施
               obj.cwd = path
             resolve obj
         .then (obj) =>
@@ -69,7 +71,8 @@ class Server
               Promise.resolve obj
 
   start_push_log: (name) ->
-    @console "开始输出#{name}的日志"
+    if @push_recorder[name].cmd is null
+      @console "开始输出#{name}的日志"
     cmd = exec "pm2 logs #{name}"
     cmd.stdout.on 'data', (data) =>
       @server.push name, data
@@ -113,22 +116,32 @@ class Server
     @server.push 'console', "#{msg}\n"
 
   reload_app: (name) ->
-    new Promise (resolve, reject) =>
-      @console "重载#{name}中，请稍等..."
-      pm2.reload name, (err) =>
-        if err
-          return reject err
-        @console "重载#{name}完成"
-        resolve()
+    pm2.reloadAsync name
+    .then =>
+      @console "重载#{name}完成"
+      Promise.resolve()
+
+#    new Promise (resolve, reject) =>
+#      @console "重载#{name}中，请稍等..."
+#      pm2.reload name, (err) =>
+#        if err
+#          return reject err
+#        @console "重载#{name}完成"
+#        resolve()
 
   restart_app: (name) ->
-    new Promise (resolve, reject) =>
-      @console "重启#{name}中，请稍等..."
-      pm2.restart name, (err) =>
-        if err
-          return reject err
-        @console "重启#{name}完成"
-        resolve()
+    pm2.restartAsync name
+    .then =>
+      @console "重启#{name}完成"
+      Promise.resolve()
+
+#    new Promise (resolve, reject) =>
+#      @console "重启#{name}中，请稍等..."
+#      pm2.restart name, (err) =>
+#        if err
+#          return reject err
+#        @console "重启#{name}完成"
+#        resolve()
 
   get_git_path: (name) ->
     @get_app_list(true)
