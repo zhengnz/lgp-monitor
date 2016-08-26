@@ -178,6 +178,7 @@
     };
 
     Server.prototype.reload_app = function(name) {
+      this.console("重载" + name + "中，请稍等...");
       return pm2.reloadAsync(name).then((function(_this) {
         return function() {
           _this.console("重载" + name + "完成");
@@ -187,6 +188,7 @@
     };
 
     Server.prototype.restart_app = function(name) {
+      this.console("重启" + name + "中，请稍等...");
       return pm2.restartAsync(name).then((function(_this) {
         return function() {
           _this.console("重启" + name + "完成");

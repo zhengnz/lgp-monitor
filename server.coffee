@@ -116,6 +116,7 @@ class Server
     @server.push 'console', "#{msg}\n"
 
   reload_app: (name) ->
+    @console "重载#{name}中，请稍等..."
     pm2.reloadAsync name
     .then =>
       @console "重载#{name}完成"
@@ -130,6 +131,7 @@ class Server
 #        resolve()
 
   restart_app: (name) ->
+    @console "重启#{name}中，请稍等..."
     pm2.restartAsync name
     .then =>
       @console "重启#{name}完成"
