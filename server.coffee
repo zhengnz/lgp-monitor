@@ -22,6 +22,13 @@ class Server
     @init_publish() #初始化各app日志推送监听
     @server.publish 'console' #开启操作日志推送
 
+    @forbid_restart = false
+    process.on 'SIGINT', =>
+      @forbid_restart = true
+      _.forIn @push_recorder, (v, k) ->
+        if v.cmd?
+          v.cmd.kill()
+
   cmd: (msg, cwd=__dirname) ->
     new Promise (resolve, reject) ->
       exec msg, {cwd: cwd}, (err, stdout, stderr) ->
@@ -77,7 +84,7 @@ class Server
     cmd.stdout.on 'data', (data) =>
       @server.push name, data
     cmd.on 'exit', =>
-      if @server.idlist(name) > 0
+      if @server.idlist(name) > 0 and @forbid_restart is off
         @start_push_log name
       else
         @push_recorder[name].cmd = null

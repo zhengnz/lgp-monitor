@@ -32,6 +32,17 @@
       });
       this.init_publish();
       this.server.publish('console');
+      this.forbid_restart = false;
+      process.on('SIGINT', (function(_this) {
+        return function() {
+          _this.forbid_restart = true;
+          return _.forIn(_this.push_recorder, function(v, k) {
+            if (v.cmd != null) {
+              return v.cmd.kill();
+            }
+          });
+        };
+      })(this));
     }
 
     Server.prototype.cmd = function(msg, cwd) {
@@ -123,7 +134,7 @@
       })(this));
       cmd.on('exit', (function(_this) {
         return function() {
-          if (_this.server.idlist(name) > 0) {
+          if (_this.server.idlist(name) > 0 && _this.forbid_restart === false) {
             return _this.start_push_log(name);
           } else {
             return _this.push_recorder[name].cmd = null;
