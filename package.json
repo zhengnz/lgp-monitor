@@ -1,6 +1,6 @@
 {
   "name": "lgp-monitor",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "description": "PM2 Sample Module",
   "main": "app.js",
   "dependencies": {

@@ -28,14 +28,6 @@ block content
                         .ui.dropdown.icon.item
                             .text 操作
                             .menu
-                                .item(data-bind='click: restart')
-                                    i.repeat.icon.mr5
-                                    | 重启
-                                //ko if: mode() != 'fork_mode'
-                                .item(data-bind='click: reload')
-                                    i.refresh.icon.mr5
-                                    | 重载
-                                ///ko
                                 //ko if: git
                                 .item(data-bind='click: pull')
                                     i.git.icon.mr5
@@ -46,6 +38,14 @@ block content
                                     i.git.icon.mr5
                                     | 回滚
                                 ///ko
+                                //ko if: mode() != 'fork_mode'
+                                .item(data-bind='click: reload')
+                                    i.refresh.icon.mr5
+                                    | 重载
+                                ///ko
+                                .item(data-bind='click: restart')
+                                    i.repeat.icon.mr5
+                                    | 重启
                         .ui.dropdown.icon.item
                             .text 日志
                             .menu
