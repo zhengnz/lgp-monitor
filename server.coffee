@@ -52,6 +52,13 @@ class Server
         return Promise.reject new Error stderr
       Promise.resolve stdout
 
+  get_git_source: (path) ->
+    @cmd "cd #{path} && git config --get remote.origin.url"
+    .spread (stdout, stderr) ->
+      if stderr
+        return Promise.reject new Error stderr
+      Promise.resolve stdout
+
   get_app_list: (has_cwd=false) ->
     @true_app_list()
     .then (apps) =>
@@ -73,9 +80,14 @@ class Server
             obj.git_version = ''
             Promise.resolve obj
           else
-            @get_git_version path
-            .then (version) ->
+            Promise.all [
+              @get_git_version path
+              @get_git_source path
+            ]
+            .then (results) ->
+              [version, source] = results
               obj.git_version = version
+              obj.git_source = source
               Promise.resolve obj
 
   start_push_log: (name) ->
@@ -188,7 +200,7 @@ class Server
     @get_git_path name
     .then (path) =>
       format = '{\\"id\\": \\"%H\\", \\"msg\\": \\"%s\\", \\"time\\": \\"%cd\\"}'
-      @cmd "cd #{path} && git log --pretty=format:\"#{format}\" -5"
+      @cmd "cd #{path} && git log --pretty=format:\"#{format}\" -10"
     .spread (stdout, stderr) =>
       if stderr
         return Promise.reject new Error stderr

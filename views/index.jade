@@ -32,8 +32,6 @@ block content
                                 .item(data-bind='click: pull')
                                     i.git.icon.mr5
                                     | 同步
-                                ///ko
-                                //ko if: git
                                 .item(data-bind='click: list_commit')
                                     i.git.icon.mr5
                                     | 回滚
@@ -63,13 +61,14 @@ block content
                                     ///ko
                         //ko if: git_version
                         .ui.item(data-bind='text: git_version')
+                        .ui.item(data-bind='text: git_source')
                         ///ko
-                        .right.menu
-                            .ui.right.aligned.category.search.item
-                                .ui.transparent.icon.input
-                                    input.prompt(type='text', placeholder='日志过滤正则')
-                                    i.search.link.icon
-                                .results
+                        //.right.menu
+                        //    .ui.right.aligned.category.search.item
+                        //        .ui.transparent.icon.input
+                        //            input.prompt(type='text', placeholder='日志过滤正则')
+                        //            i.search.link.icon
+                        //        .results
                     .ui.bottom.attached.segment.scroll-panel-body(style='height: 50vh;')
                         pre(data-bind='textBottom: output')
                 ///ko

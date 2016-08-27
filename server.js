@@ -84,6 +84,15 @@
       });
     };
 
+    Server.prototype.get_git_source = function(path) {
+      return this.cmd("cd " + path + " && git config --get remote.origin.url").spread(function(stdout, stderr) {
+        if (stderr) {
+          return Promise.reject(new Error(stderr));
+        }
+        return Promise.resolve(stdout);
+      });
+    };
+
     Server.prototype.get_app_list = function(has_cwd) {
       if (has_cwd == null) {
         has_cwd = false;
@@ -111,8 +120,11 @@
                 obj.git_version = '';
                 return Promise.resolve(obj);
               } else {
-                return _this.get_git_version(path).then(function(version) {
+                return Promise.all([_this.get_git_version(path), _this.get_git_source(path)]).then(function(results) {
+                  var source, version;
+                  version = results[0], source = results[1];
                   obj.git_version = version;
+                  obj.git_source = source;
                   return Promise.resolve(obj);
                 });
               }
@@ -261,7 +273,7 @@
         return function(path) {
           var format;
           format = '{\\"id\\": \\"%H\\", \\"msg\\": \\"%s\\", \\"time\\": \\"%cd\\"}';
-          return _this.cmd("cd " + path + " && git log --pretty=format:\"" + format + "\" -5");
+          return _this.cmd("cd " + path + " && git log --pretty=format:\"" + format + "\" -10");
         };
       })(this)).spread((function(_this) {
         return function(stdout, stderr) {
