@@ -5,6 +5,7 @@
     npm install -g pm2@next
     pm2 install lgp-monitor
 ---
+***启动完成后浏览器访问http://127.0.0.1:3001，如果pm2添加或删除项目后，请执行pm2 restart lgp-monitor***
 
 ##设置端口
 ---
