@@ -217,7 +217,8 @@
         };
       })(this))["catch"]((function(_this) {
         return function(err) {
-          return alert('发生错误，请查看控制台');
+          alert('发生错误，请查看控制台');
+          return console.log(err);
         };
       })(this)).whenComplete((function(_this) {
         return function() {

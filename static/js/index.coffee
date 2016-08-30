@@ -157,6 +157,7 @@ class viewModel
         new appModel @, row
     .catch (err) =>
       alert '发生错误，请查看控制台'
+      console.log err
     .whenComplete =>
       @list_loading false
 
