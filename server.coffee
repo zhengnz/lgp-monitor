@@ -38,12 +38,9 @@ class Server
         resolve [stdout, stderr]
 
   true_app_list: ->
-    new Promise (resolve, reject) ->
-      pm2.list (err, list) ->
-        if err
-          return reject err
-        resolve _.filter list, (l) ->
-          l.name isnt 'lgp-monitor'
+    pm2.listAsync().then (list) ->
+      Promise.resolve _.filter list, (l) ->
+        l.name isnt 'lgp-monitor'
 
   get_git_version: (path) ->
     @cmd "cd #{path} && git rev-parse HEAD"
@@ -71,6 +68,8 @@ class Server
               git: exists
               mode: app.pm2_env.exec_mode
             }
+            if _.has app.pm2_env.env, 'MONITOR_GROUP'
+              obj.group = app.pm2_env.env.MONITOR_GROUP
             if has_cwd is on
               #has_cwd指定为true是返回包含目录的object，安全性措施
               obj.cwd = path

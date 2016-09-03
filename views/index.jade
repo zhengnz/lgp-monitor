@@ -13,8 +13,20 @@ block content
                     //ko ifnot: list_loading
                     a.item.disabled(href='javascript:;') 选择要查看的app
                     ///ko
+
+                    //ko ifnot: has_group
                     //ko foreach: app_list
                     a.item(href='#', data-bind='text: name, click: show')
+                    ///ko
+                    ///ko
+
+                    //ko if: has_group
+                    //ko foreach: group_app_list().keys
+                    .item
+                        .header(data-bind='text: $data')
+                        .menu(data-bind='foreach: $root.group_app_list().origin[$data]')
+                            a.item(href='#', data-bind='text: name, click: show')
+                    ///ko
                     ///ko
             .full-height(flex='dir:top', flex-box='1')
                 //ko if: view_app

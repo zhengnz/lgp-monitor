@@ -130,6 +130,25 @@ class viewModel
     ]
 
     @app_list = ko.observableArray []
+    @has_group = ko.computed =>
+      has_group = _.find @app_list(), (app) ->
+        _.has app, 'group'
+      has_group isnt undefined
+    @group_app_list = ko.computed =>
+      if @has_group() is off
+        return []
+      _.each @app_list(), (app) ->
+        if not _.has app, 'group'
+          app.group = ko.obervable '其他'
+      group = _.groupBy @app_list(), (app) ->
+        app.group()
+      data = {
+        origin: group
+        keys: _.keys group
+      }
+      console.log data
+      data
+
     @view_app = ko.observable null
     @view_app.subscribe (v) ->
       if v?

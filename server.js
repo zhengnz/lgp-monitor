@@ -63,15 +63,10 @@
     };
 
     Server.prototype.true_app_list = function() {
-      return new Promise(function(resolve, reject) {
-        return pm2.list(function(err, list) {
-          if (err) {
-            return reject(err);
-          }
-          return resolve(_.filter(list, function(l) {
-            return l.name !== 'lgp-monitor';
-          }));
-        });
+      return pm2.listAsync().then(function(list) {
+        return Promise.resolve(_.filter(list, function(l) {
+          return l.name !== 'lgp-monitor';
+        }));
       });
     };
 
@@ -110,6 +105,9 @@
                   git: exists,
                   mode: app.pm2_env.exec_mode
                 };
+                if (_.has(app.pm2_env.env, 'MONITOR_GROUP')) {
+                  obj.group = app.pm2_env.env.MONITOR_GROUP;
+                }
                 if (has_cwd === true) {
                   obj.cwd = path;
                 }

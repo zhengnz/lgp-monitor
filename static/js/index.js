@@ -185,6 +185,37 @@
     function viewModel() {
       this.client = new hprose.Client.create("/api", ['get_app_list', 'reload', 'restart', 'git', 'get_git_commits', 'git_rollback', 'client_exit']);
       this.app_list = ko.observableArray([]);
+      this.has_group = ko.computed((function(_this) {
+        return function() {
+          var has_group;
+          has_group = _.find(_this.app_list(), function(app) {
+            return _.has(app, 'group');
+          });
+          return has_group !== void 0;
+        };
+      })(this));
+      this.group_app_list = ko.computed((function(_this) {
+        return function() {
+          var data, group;
+          if (_this.has_group() === false) {
+            return [];
+          }
+          _.each(_this.app_list(), function(app) {
+            if (!_.has(app, 'group')) {
+              return app.group = ko.obervable('其他');
+            }
+          });
+          group = _.groupBy(_this.app_list(), function(app) {
+            return app.group();
+          });
+          data = {
+            origin: group,
+            keys: _.keys(group)
+          };
+          console.log(data);
+          return data;
+        };
+      })(this));
       this.view_app = ko.observable(null);
       this.view_app.subscribe(function(v) {
         if (v != null) {
