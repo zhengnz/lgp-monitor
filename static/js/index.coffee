@@ -139,7 +139,7 @@ class viewModel
         return []
       _.each @app_list(), (app) ->
         if not _.has app, 'group'
-          app.group = ko.obervable '其他'
+          app.group = ko.observable '其他'
       group = _.groupBy @app_list(), (app) ->
         app.group()
       data = {

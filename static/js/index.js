@@ -202,7 +202,7 @@
           }
           _.each(_this.app_list(), function(app) {
             if (!_.has(app, 'group')) {
-              return app.group = ko.obervable('其他');
+              return app.group = ko.observable('其他');
             }
           });
           group = _.groupBy(_this.app_list(), function(app) {
