@@ -29,22 +29,8 @@ probe.metric {
     conf.port
 }
 
-website_plugin = conf.website or "#{__dirname}/website.js"
-probe.metric {
-  name: 'website'
-  value: ->
-    website_plugin
-}
-
-server_plugin = conf.server or "#{__dirname}/server.js"
-probe.metric {
-  name: 'server'
-  value: ->
-    server_plugin
-}
-
-app = require website_plugin
-Server = require server_plugin
+app = require "#{__dirname}/website.js"
+Server = require "#{__dirname}/server.js"
 
 pm2.connect (err) ->
   if err

@@ -103,10 +103,14 @@
                 obj = {
                   name: app.name,
                   git: exists,
-                  mode: app.pm2_env.exec_mode
+                  mode: app.pm2_env.exec_mode,
+                  branch: 'master'
                 };
                 if (_.has(app.pm2_env.env, 'MONITOR_GROUP')) {
                   obj.group = app.pm2_env.env.MONITOR_GROUP;
+                }
+                if (_.has(app.pm2_env.env, 'GIT_BRANCH')) {
+                  obj.branch = app.pm2_env.env.GIT_BRANCH;
                 }
                 if (has_cwd === true) {
                   obj.cwd = path;
@@ -231,28 +235,41 @@
     Server.prototype.get_git_path = function(name) {
       return this.get_app_list(true).then((function(_this) {
         return function(apps) {
-          return new Promise(function(resolve, reject) {
-            var app;
-            app = _.find(apps, function(_app) {
-              return _app.name === name && _app.git === true;
-            });
-            if (app === void 0) {
-              reject(new Error('无匹配的应用'));
-            }
-            return resolve(app.cwd);
+          var app;
+          app = _.find(apps, function(_app) {
+            return _app.name === name && _app.git === true;
           });
+          if (app === void 0) {
+            return Promise.reject(new Error('无匹配的应用'));
+          }
+          return Promise.resolve(app.cwd);
         };
       })(this));
     };
 
-    Server.prototype.git = function(name) {
+    Server.prototype.get_git_branch = function(name) {
+      return this.get_app_list(true).then((function(_this) {
+        return function(apps) {
+          var app;
+          app = _.find(apps, function(_app) {
+            return _app.name === name && _app.git === true;
+          });
+          if (app === void 0) {
+            return Promise.reject(new Error('无匹配的应用'));
+          }
+          return Promise.resolve(app.branch);
+        };
+      })(this));
+    };
+
+    Server.prototype.git = function(name, branch) {
       var path;
       path = null;
       return this.get_git_path(name).then((function(_this) {
         return function(p) {
           var cmd;
           path = p;
-          cmd = 'git pull -u origin master';
+          cmd = "git pull origin " + branch;
           _this.console("开始git同步, 目录: " + path);
           _this.console(cmd);
           return _this.cmd(cmd, path);

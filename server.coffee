@@ -67,9 +67,12 @@ class Server
               name: app.name
               git: exists
               mode: app.pm2_env.exec_mode
+              branch: 'master'
             }
             if _.has app.pm2_env.env, 'MONITOR_GROUP'
               obj.group = app.pm2_env.env.MONITOR_GROUP
+            if _.has app.pm2_env.env, 'GIT_BRANCH'
+              obj.branch = app.pm2_env.env.GIT_BRANCH
             if has_cwd is on
               #has_cwd指定为true是返回包含目录的object，安全性措施
               obj.cwd = path
@@ -148,14 +151,6 @@ class Server
       @console "重载#{name}完成"
       Promise.resolve()
 
-#    new Promise (resolve, reject) =>
-#      @console "重载#{name}中，请稍等..."
-#      pm2.reload name, (err) =>
-#        if err
-#          return reject err
-#        @console "重载#{name}完成"
-#        resolve()
-
   restart_app: (name) ->
     @console "重启#{name}中，请稍等..."
     pm2.restartAsync name
@@ -163,30 +158,30 @@ class Server
       @console "重启#{name}完成"
       Promise.resolve()
 
-#    new Promise (resolve, reject) =>
-#      @console "重启#{name}中，请稍等..."
-#      pm2.restart name, (err) =>
-#        if err
-#          return reject err
-#        @console "重启#{name}完成"
-#        resolve()
-
   get_git_path: (name) ->
     @get_app_list(true)
     .then (apps) =>
-      new Promise (resolve, reject) =>
-        app = _.find apps, (_app) ->
-          _app.name is name and _app.git is on
-        if app is undefined
-          reject new Error '无匹配的应用'
-        resolve app.cwd
+      app = _.find apps, (_app) ->
+        _app.name is name and _app.git is on
+      if app is undefined
+        return Promise.reject new Error '无匹配的应用'
+      Promise.resolve app.cwd
 
-  git: (name) ->
+  get_git_branch: (name) ->
+    @get_app_list(true)
+    .then (apps) =>
+      app = _.find apps, (_app) ->
+        _app.name is name and _app.git is on
+      if app is undefined
+        return Promise.reject new Error '无匹配的应用'
+      Promise.resolve app.branch
+
+  git: (name, branch) ->
     path = null
     @get_git_path name
     .then (p) =>
       path = p
-      cmd = 'git pull -u origin master'
+      cmd = "git pull origin #{branch}"
       @console "开始git同步, 目录: #{path}"
       @console cmd
       @cmd cmd, path

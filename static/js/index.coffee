@@ -90,7 +90,7 @@ class appModel
     if @parent.loading() is on
       return
     @parent.loading true
-    @parent.client.git @name()
+    @parent.client.git @name(), @branch()
     .then (version) =>
       @git_version version
     .catch (err) ->

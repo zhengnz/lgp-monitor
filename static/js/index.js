@@ -137,7 +137,7 @@
         return;
       }
       this.parent.loading(true);
-      return this.parent.client.git(this.name()).then((function(_this) {
+      return this.parent.client.git(this.name(), this.branch()).then((function(_this) {
         return function(version) {
           return _this.git_version(version);
         };

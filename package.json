@@ -1,6 +1,6 @@
 {
   "name": "lgp-monitor",
-  "version": "2.1.9",
+  "version": "2.1.10",
   "description": "PM2 Sample Module",
   "main": "app.js",
   "dependencies": {
@@ -20,9 +20,7 @@
     "url": "https://github.com/zhengnz/lgp-monitor"
   },
   "config": {
-    "port": 3001,
-    "website": false,
-    "server": false
+    "port": 3001
   },
   "apps": [
     {
