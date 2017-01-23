@@ -245,7 +245,6 @@ class Server
     .spread (stdout, stderr) =>
       @console stderr
       @console stdout
-      @get_git_version path
 
   start: ->
     @server.start()

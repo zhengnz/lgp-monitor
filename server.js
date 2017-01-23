@@ -366,8 +366,7 @@
       })(this)).spread((function(_this) {
         return function(stdout, stderr) {
           _this.console(stderr);
-          _this.console(stdout);
-          return _this.get_git_version(path);
+          return _this.console(stdout);
         };
       })(this));
     };
