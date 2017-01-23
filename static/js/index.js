@@ -198,7 +198,7 @@
 
   viewModel = (function() {
     function viewModel() {
-      this.client = new hprose.Client.create("/api", ['get_app_list', 'reload', 'restart', 'git', 'get_git_commits', 'git_rollback', 'client_exit']);
+      this.client = new hprose.Client.create("/api", ['get_app_list', 'reload', 'restart', 'git', 'get_git_commits', 'git_rollback', 'npm_install', 'client_exit']);
       this.app_list = ko.observableArray([]);
       this.has_group = ko.computed((function(_this) {
         return function() {

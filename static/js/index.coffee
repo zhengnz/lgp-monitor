@@ -137,6 +137,7 @@ class viewModel
       'git'
       'get_git_commits'
       'git_rollback'
+      'npm_install'
       'client_exit'
     ]
 
