@@ -6,6 +6,7 @@ exec = require('child_process').exec
 pm2 = require 'pm2'
 fs = require 'fs'
 os = require 'os'
+shell = require 'shelljs'
 Promise.promisifyAll pm2
 
 class Server
@@ -19,6 +20,7 @@ class Server
       git: @git.bind @ #pull git
       git_rollback: @git_rollback.bind @ #git回滚到指定版本
       get_git_commits: @get_git_commits.bind @ #获取git历史
+      npm_install: @npm_install.bind @ #安装node模块
       client_exit: @client_exit.bind @
     }
     @init_publish() #初始化各app日志推送监听
@@ -219,6 +221,31 @@ class Server
     .then (version) =>
       @console "#{name}当前版本: #{version}"
       Promise.resolve version
+
+  get_npm_path: (name) ->
+    @get_app_list(true)
+    .then (apps) =>
+      app = _.find apps, (_app) ->
+        _app.name is name
+      if app is undefined
+        return Promise.reject new Error '无匹配的应用'
+      Promise.resolve app.cwd
+
+  npm_install: (name) ->
+    @get_npm_path name
+    .then (p) =>
+      path = p
+      if shell.which 'cnpm'
+        cmd = 'cnpm install'
+      else
+        cmd = 'npm install'
+      @console "开始安装, 目录: #{path}"
+      @console cmd
+      @cmd cmd, path
+    .spread (stdout, stderr) =>
+      @console stderr
+      @console stdout
+      @get_git_version path
 
   start: ->
     @server.start()

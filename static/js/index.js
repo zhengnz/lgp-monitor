@@ -151,6 +151,21 @@
       })(this));
     };
 
+    appModel.prototype.npm = function() {
+      if (this.parent.loading() === true) {
+        return;
+      }
+      this.parent.loading(true);
+      return this.parent.client.npm_install(this.name())["catch"](function(err) {
+        alert('发生错误，请查看控制台');
+        return console.log(err);
+      }).whenComplete((function(_this) {
+        return function() {
+          return _this.parent.loading(false);
+        };
+      })(this));
+    };
+
     appModel.prototype.list_commit = function() {
       if (this.parent.loading() === true) {
         return;

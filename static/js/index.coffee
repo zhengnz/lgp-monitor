@@ -99,6 +99,17 @@ class appModel
     .whenComplete =>
       @parent.loading false
 
+  npm: ->
+    if @parent.loading() is on
+      return
+    @parent.loading true
+    @parent.client.npm_install @name()
+    .catch (err) ->
+      alert '发生错误，请查看控制台'
+      console.log err
+    .whenComplete =>
+      @parent.loading false
+
   list_commit: ->
     if @parent.loading() is on
       return
