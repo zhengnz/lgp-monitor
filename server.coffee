@@ -41,8 +41,9 @@ class Server
 
   true_app_list: ->
     pm2.listAsync().then (list) ->
-      Promise.resolve _.filter list, (l) ->
-        l.name isnt 'lgp-monitor'
+      list
+#      Promise.resolve _.filter list, (l) ->
+#        l.name isnt 'lgp-monitor'
 
   get_git_version: (path) ->
     @cmd "cd #{path} && git rev-parse HEAD"
