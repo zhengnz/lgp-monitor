@@ -56,9 +56,14 @@ block content
                                 .item(data-bind='click: restart')
                                     i.repeat.icon.mr5
                                     | 重启
+                                //ko if: js_compile
+                                .item(data-bind='click: compile')
+                                    i.download.icon.mr5
+                                    | JS编译
+                                ///ko
                                 .item(data-bind='click: npm')
                                     i.download.icon.mr5
-                                    | npm install
+                                    | yarn add
                         .ui.dropdown.icon.item
                             .text 日志
                             .menu

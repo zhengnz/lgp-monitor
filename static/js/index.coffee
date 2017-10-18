@@ -110,6 +110,17 @@ class appModel
     .whenComplete =>
       @parent.loading false
 
+  compile: ->
+    if @parent.loading() is on
+      return
+    @parent.loading true
+    @parent.client.js_compile @name()
+    .catch (err) ->
+      alert '发生错误，请查看控制台'
+      console.log err
+    .whenComplete =>
+      @parent.loading false
+
   list_commit: ->
     if @parent.loading() is on
       return
@@ -138,6 +149,7 @@ class viewModel
       'get_git_commits'
       'git_rollback'
       'npm_install'
+      'js_compile'
       'client_exit'
     ]
 
