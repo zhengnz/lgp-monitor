@@ -167,11 +167,15 @@
     };
 
     appModel.prototype.compile = function() {
+      var onsuccess;
       if (this.parent.loading() === true) {
         return;
       }
       this.parent.loading(true);
-      return this.parent.client.js_compile(this.name())["catch"](function(err) {
+      onsuccess = function() {};
+      return this.parent.client.js_compile(this.name(), onsuccess, {
+        timeout: 5 * 60000
+      })["catch"](function(err) {
         alert('发生错误，请查看控制台');
         return console.log(err);
       }).whenComplete((function(_this) {
