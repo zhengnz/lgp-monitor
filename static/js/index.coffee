@@ -113,14 +113,8 @@ class appModel
   compile: ->
     if @parent.loading() is on
       return
-    @parent.loading true
     onsuccess = ->
-    @parent.client.js_compile @name(), onsuccess, {timeout: 5 * 60000}
-    .catch (err) ->
-      alert '发生错误，请查看控制台'
-      console.log err
-    .whenComplete =>
-      @parent.loading false
+    @parent.client.js_compile @name(), onsuccess, {oneway: true}
 
   list_commit: ->
     if @parent.loading() is on
