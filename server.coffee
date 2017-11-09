@@ -253,16 +253,27 @@ class Server
       @console stdout
 
   js_compile: (name) ->
+    path = null
     @get_project_path name
     .then (p) =>
       path = p
-      cmd = "rm -rf node_modules && #{@run_npm()} && npm run prod && rm -rf node_modules && #{@run_npm()} --production"
-      @console "开始安装, 目录: #{path}"
-      @console cmd
-      @cmd cmd, path
-    .spread (stdout, stderr) =>
-      @console stderr
-      @console stdout
+      @console "开始编译，目录#{path}"
+      @console '删除模块目录'
+      shell.rm '-rf', path.join(path, 'node_modules')
+      @console '删除成功, 开始安装模块'
+      if shell.exec("cd #{path} && #{@run_npm()}").code isnt 0
+        @console '安装模块失败'
+        return
+      @console '安装成功, 开始编译'
+      if shell.exec("cd #{path} && npm run prod").code isnt 0
+        @console '编译失败'
+        return
+      @console '编译成功, 安装生成环境模块'
+      shell.rm '-rf', path.join(path, 'node_modules')
+      if shell.exec("cd #{path} && #{@run_npm()} --production").code isnt 0
+        @console '安装模块失败'
+        return
+      @console '完成'
 
   start: ->
     @server.start()
