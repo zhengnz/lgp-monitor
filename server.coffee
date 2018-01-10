@@ -236,15 +236,15 @@ class Server
 
   run_npm: ->
     if shell.which 'yarn'
-      'yarn install'
+      'yarn'
     else
-      'npm install'
+      'npm'
 
   npm_install: (name) ->
     @get_project_path name
     .then (p) =>
       path = p
-      cmd = "#{@run_npm()} --production"
+      cmd = "#{@run_npm()} install --production"
       @console "开始安装, 目录: #{path}"
       @console cmd
       @cmd cmd, path
@@ -253,16 +253,30 @@ class Server
       @console stdout
 
   js_compile: (name) ->
-    @get_project_path name
-    .then (p) =>
-      path = p
-      cmd = "cd #{path} && rm -rf node_modules && #{@run_npm()} && npm run prod && rm -rf node_modules && #{@run_npm()} --production"
-      @console "开始编译, 目录: #{path}"
-      child = shell.exec cmd, {async:true}
-      child.stdout.on 'data', (data) =>
-        @console data
-      child.stderr.on 'data', (data) =>
-        @console "err: #{data}"
+    @true_app_list()
+    .then (apps) =>
+      Promise.map apps, (app) =>
+        @get_project_path name
+        .then (p) =>
+          path = p
+          scriptClear = " && rm -rf node_modules"
+          scriptInstall = " && yarn"
+          
+          scriptBuild = " && yarn cross-env NODE_ENV="
+          if app.pm2_env.NODE_ENV
+            scriptBuild += app.pm2_env.NODE_ENV
+          else
+            scriptBuild += "prod"
+          scriptBuild += " yarn prod"
+
+          cmd = "cd #{path}" + scriptClear + scriptInstall + scriptBuild
+          # cmd = "cd #{path} && rm -rf node_modules && #{@run_npm()} && npm run prod && rm -rf node_modules && #{@run_npm()} --production"
+          @console "开始编译, 目录: #{path}"
+          child = shell.exec cmd, {async:true}
+          child.stdout.on 'data', (data) =>
+            @console data
+          child.stderr.on 'data', (data) =>
+            @console "err: #{data}"
 
   start: ->
     @server.start()
