@@ -384,7 +384,7 @@
         return function(p) {
           var child, cmd, path;
           path = p;
-          cmd = "cd " + path + " && rm -rf node_modules && " + (_this.run_npm()) + " install && " + (_this.run_npm()) + " run " + value + " && rm -rf node_modules && " + (_this.run_npm()) + " install --production";
+          cmd = "cd " + path + " && rm -rf node_modules && " + (_this.run_npm()) + " install && " + (_this.run_npm()) + " run " + value;
           _this.console("开始编译, 目录: " + path);
           child = shell.exec(cmd, {
             async: true
