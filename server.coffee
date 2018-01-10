@@ -77,7 +77,10 @@ class Server
               obj.group = app.pm2_env.env.MONITOR_GROUP
             if _.has app.pm2_env.env, 'GIT_BRANCH'
               obj.branch = app.pm2_env.env.GIT_BRANCH
-            obj.js_compile = _.has app.pm2_env.env, 'JS_COMPILE'
+            if _.has app.pm2_env.env, 'JS_COMPILE'
+              obj.js_compile = app.pm2_env.env.JS_COMPILE
+            else
+              obj.js_compile = false
             if has_cwd is on
               #has_cwd指定为true是返回包含目录的object，安全性措施
               obj.cwd = path
@@ -236,15 +239,15 @@ class Server
 
   run_npm: ->
     if shell.which 'yarn'
-      'yarn install'
+      'yarn'
     else
-      'npm install'
+      'npm'
 
   npm_install: (name) ->
     @get_project_path name
     .then (p) =>
       path = p
-      cmd = "#{@run_npm()} --production"
+      cmd = "#{@run_npm()} install --production"
       @console "开始安装, 目录: #{path}"
       @console cmd
       @cmd cmd, path
@@ -252,11 +255,11 @@ class Server
       @console stderr
       @console stdout
 
-  js_compile: (name) ->
+  js_compile: (name, value) ->
     @get_project_path name
     .then (p) =>
       path = p
-      cmd = "cd #{path} && rm -rf node_modules && #{@run_npm()} && npm run prod && rm -rf node_modules && #{@run_npm()} --production"
+      cmd = "cd #{path} && rm -rf node_modules && #{@run_npm()} install && #{@run_npm()} run #{value} && rm -rf node_modules && #{@run_npm()} install --production"
       @console "开始编译, 目录: #{path}"
       child = shell.exec cmd, {async:true}
       child.stdout.on 'data', (data) =>

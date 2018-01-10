@@ -172,7 +172,7 @@
         return;
       }
       onsuccess = function() {};
-      return this.parent.client.js_compile(this.name(), onsuccess, {
+      return this.parent.client.js_compile(this.name(), this.js_compile(), onsuccess, {
         oneway: true
       });
     };

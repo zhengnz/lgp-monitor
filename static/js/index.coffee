@@ -114,7 +114,7 @@ class appModel
     if @parent.loading() is on
       return
     onsuccess = ->
-    @parent.client.js_compile @name(), onsuccess, {oneway: true}
+    @parent.client.js_compile @name(), @js_compile(), onsuccess, {oneway: true}
 
   list_commit: ->
     if @parent.loading() is on

@@ -114,7 +114,11 @@
                 if (_.has(app.pm2_env.env, 'GIT_BRANCH')) {
                   obj.branch = app.pm2_env.env.GIT_BRANCH;
                 }
-                obj.js_compile = _.has(app.pm2_env.env, 'JS_COMPILE');
+                if (_.has(app.pm2_env.env, 'JS_COMPILE')) {
+                  obj.js_compile = app.pm2_env.env.JS_COMPILE;
+                } else {
+                  obj.js_compile = false;
+                }
                 if (has_cwd === true) {
                   obj.cwd = path;
                 }
@@ -351,9 +355,9 @@
 
     Server.prototype.run_npm = function() {
       if (shell.which('yarn')) {
-        return 'yarn install';
+        return 'yarn';
       } else {
-        return 'npm install';
+        return 'npm';
       }
     };
 
@@ -362,7 +366,7 @@
         return function(p) {
           var cmd, path;
           path = p;
-          cmd = (_this.run_npm()) + " --production";
+          cmd = (_this.run_npm()) + " install --production";
           _this.console("开始安装, 目录: " + path);
           _this.console(cmd);
           return _this.cmd(cmd, path);
@@ -375,12 +379,12 @@
       })(this));
     };
 
-    Server.prototype.js_compile = function(name) {
+    Server.prototype.js_compile = function(name, value) {
       return this.get_project_path(name).then((function(_this) {
         return function(p) {
           var child, cmd, path;
           path = p;
-          cmd = "cd " + path + " && rm -rf node_modules && " + (_this.run_npm()) + " && npm run prod && rm -rf node_modules && " + (_this.run_npm()) + " --production";
+          cmd = "cd " + path + " && rm -rf node_modules && " + (_this.run_npm()) + " install && " + (_this.run_npm()) + " run " + value + " && rm -rf node_modules && " + (_this.run_npm()) + " install --production";
           _this.console("开始编译, 目录: " + path);
           child = shell.exec(cmd, {
             async: true
