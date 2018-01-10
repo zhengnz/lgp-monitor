@@ -259,7 +259,8 @@ class Server
     @get_project_path name
     .then (p) =>
       path = p
-      cmd = "cd #{path} && rm -rf node_modules && #{@run_npm()} install && #{@run_npm()} run #{value}"
+      cmd = "cd #{path} && rm -rf node_modules && #{@run_npm()} install && #{@run_npm()} run prod"
+      shell.env['COMPILE_ENV'] = value
       @console "开始编译, 目录: #{path}"
       child = shell.exec cmd, {async:true}
       child.stdout.on 'data', (data) =>
