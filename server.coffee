@@ -7,6 +7,7 @@ pm2 = require 'pm2'
 fs = require 'fs'
 os = require 'os'
 shell = require 'shelljs'
+child_process = require 'child_process'
 Promise.promisifyAll pm2
 
 class Server
@@ -255,18 +256,27 @@ class Server
       @console stderr
       @console stdout
 
-  js_compile: (name, value) ->
-    @get_project_path name
-    .then (p) =>
+  get_project_env: (name) ->
+    @true_app_list().then (apps) ->
+      obj = _.find apps, (app) ->
+        app.name is name
+      Promise.resolve obj.pm2_env.env
+
+  js_compile: (name) ->
+    Promise.all [
+      @get_project_env(name)
+      @get_project_path(name)
+    ]
+    .spread (env, p) =>
       path = p
       cmd = "cd #{path} && rm -rf node_modules && #{@run_npm()} install && #{@run_npm()} run prod"
-      shell.env['COMPILE_ENV'] = value
       @console "开始编译, 目录: #{path}"
-      child = shell.exec cmd, {async:true}
-      child.stdout.on 'data', (data) =>
-        @console data
-      child.stderr.on 'data', (data) =>
-        @console "err: #{data}"
+      n = child_process.fork './env_command.js'
+      n.send {env: JSON.stringify(env), cmd}
+      n.on 'message', (m) =>
+        @console m.msg
+      n.on 'exit', =>
+        @console 'Compile Complete'
 
   start: ->
     @server.start()
